@@ -14,9 +14,10 @@
             --card-bg: #ffffff;
             --text-main: #222222;
             --text-sub: #666666;
-            --accent: #000000;
+            --accent: #222222; /* Darker accent for links */
             --border: #e0e0e0;
             --highlight: #f4f4f4;
+            --link-color: #0056b3; /* Explicit color for links */
         }
 
         body {
@@ -109,16 +110,11 @@
             margin-bottom: 24px;
             position: relative;
             transition: transform 0.2s, box-shadow 0.2s;
-            cursor: pointer; /* Indicates clickability */
-            text-decoration: none; /* Removes underline from anchor */
-            display: block; /* Makes anchor behave like div */
-            color: inherit;
         }
 
         .event-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 24px rgba(0,0,0,0.04);
-            border-color: #d0d0d0;
         }
 
         /* Timeline Dot */
@@ -144,11 +140,24 @@
             gap: 8px;
         }
 
+        /* Title Link Styling */
         .event-title {
             font-size: 18px;
             font-weight: 600;
             margin: 0;
             color: var(--text-main);
+        }
+
+        .event-title a {
+            text-decoration: none;
+            color: var(--text-main);
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.2s, color 0.2s;
+        }
+
+        .event-title a:hover {
+            color: var(--link-color);
+            border-bottom: 1px solid var(--link-color);
         }
 
         .event-time {
@@ -240,11 +249,15 @@
 
         function initApp(data) {
             const dateSelect = document.getElementById('dateSelect');
+            
+            // Get unique dates
             const dates = [...new Set(data.map(i => i.Date).filter(Boolean))].sort();
 
+            // Populate Dropdown
             dates.forEach(date => {
                 const opt = document.createElement('option');
                 opt.value = date;
+                // Display format: "Wed, Oct 25"
                 opt.textContent = new Date(date).toLocaleDateString('en-US', { 
                     weekday: 'short', month: 'short', day: 'numeric' 
                 });
@@ -253,23 +266,34 @@
 
             document.getElementById('loader').classList.add('hidden');
 
-            // Select first date automatically
+            // --- DATE SELECTION LOGIC ---
             if(dates.length > 0) {
-                dateSelect.value = dates[0];
-                renderEvents(dates[0]);
+                // 1. Get today's date in YYYY-MM-DD format (Local time)
+                const today = new Date();
+                const year = today.getFullYear();
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const day = String(today.getDate()).padStart(2, '0');
+                const todayStr = `${year}-${month}-${day}`;
+
+                // 2. Check if today exists in the list
+                if (dates.includes(todayStr)) {
+                    dateSelect.value = todayStr;
+                    renderEvents(todayStr);
+                } else {
+                    // 3. Fallback to earliest date
+                    dateSelect.value = dates[0];
+                    renderEvents(dates[0]);
+                }
             }
 
             dateSelect.addEventListener('change', (e) => renderEvents(e.target.value));
         }
 
-        // --- NEW: Robust Time Parsing for Sorting ---
+        // Time Parsing for Sorting
         function parseTime(timeStr) {
-            if (!timeStr) return 9999; // Put empty times at the end
-            
-            // Handle "14:30" or "2:30 PM"
+            if (!timeStr) return 9999;
             const date = new Date('1970/01/01 ' + timeStr);
             if (isNaN(date.getTime())) return 9999;
-            
             return date.getHours() * 60 + date.getMinutes();
         }
 
@@ -279,7 +303,7 @@
 
             const events = allData
                 .filter(d => d.Date === date)
-                .sort((a, b) => parseTime(a.Time) - parseTime(b.Time)); // Fixed Sorting
+                .sort((a, b) => parseTime(a.Time) - parseTime(b.Time));
 
             if (events.length === 0) {
                 container.innerHTML = '<div class="loading">No plans for this date.</div>';
@@ -287,20 +311,26 @@
             }
 
             events.forEach(item => {
-                // Link Logic: Make the whole card a link if URL exists
+                // Link Logic
                 const hasLink = item.Link && item.Link.trim().length > 0;
-                const tag = hasLink ? 'a' : 'div';
-                const hrefAttr = hasLink ? `href="${item.Link}" target="_blank"` : '';
                 
-                // Opening Hours Logic (Looks for "Opening Hours" column)
+                // Construct Title HTML: Anchor if link exists, plain text if not
+                let titleHtml = '';
+                if (hasLink) {
+                    titleHtml = `<a href="${item.Link}" target="_blank" title="Open in Google Maps">${item.Name} ↗</a>`;
+                } else {
+                    titleHtml = item.Name;
+                }
+                
+                // Opening Hours Logic
                 const hours = item['Opening Hours'] || item['Opening_Hours'] || item['Hours']; 
                 const hoursHtml = hours 
                     ? `<div class="info-row"><span class="icon">🕒</span> <span class="status-open">${hours}</span></div>` 
                     : '';
 
-                // Address/Map hint
+                // Optional: Keep a small location text for clarity if needed, or rely on title
                 const locationHtml = hasLink 
-                    ? `<div class="info-row"><span class="icon">📍</span> Open in Google Maps</div>` 
+                    ? `<div class="info-row"><span class="icon">📍</span> <a href="${item.Link}" target="_blank" style="color:inherit; text-decoration:none; border-bottom:1px dotted #999;">Map Location</a></div>` 
                     : '';
 
                 const remarksHtml = item.Remarks 
@@ -308,15 +338,15 @@
                     : '';
 
                 const cardHTML = `
-                    <${tag} class="event-card" ${hrefAttr}>
+                    <div class="event-card">
                         <div class="card-header">
-                            <h2 class="event-title">${item.Name}</h2>
+                            <h2 class="event-title">${titleHtml}</h2>
                             <span class="event-time">${item.Time}</span>
                         </div>
                         ${hoursHtml}
                         ${locationHtml}
                         ${remarksHtml}
-                    </${tag}>
+                    </div>
                 `;
 
                 container.insertAdjacentHTML('beforeend', cardHTML);
