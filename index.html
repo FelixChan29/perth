@@ -5,19 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Travel Itinerary</title>
     
-    <!-- Minimalist Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-    <!-- CSV Parser Library -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
     <style>
         :root {
-            --bg-color: #fcfcfc;
+            --bg-color: #fafafa;
             --card-bg: #ffffff;
-            --text-main: #333333;
-            --text-light: #888888;
-            --accent: #2d2d2d;
-            --border: #eaeaea;
+            --text-main: #222222;
+            --text-sub: #666666;
+            --accent: #000000;
+            --border: #e0e0e0;
+            --highlight: #f4f4f4;
         }
 
         body {
@@ -37,285 +36,290 @@
         }
 
         header {
-            margin-bottom: 40px;
+            margin-bottom: 50px;
             text-align: center;
         }
 
         h1 {
-            font-weight: 300;
-            letter-spacing: -1px;
-            margin-bottom: 20px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            margin-bottom: 25px;
+            font-size: 28px;
         }
 
-        /* Minimalist Dropdown */
-        .date-selector-wrapper {
+        /* Dropdown Style */
+        .select-container {
             position: relative;
             display: inline-block;
+            width: 100%;
+            max-width: 280px;
         }
 
         select {
+            width: 100%;
             appearance: none;
             background-color: var(--card-bg);
             border: 1px solid var(--border);
-            padding: 12px 40px 12px 20px;
+            padding: 14px 20px;
             font-family: inherit;
             font-size: 16px;
-            border-radius: 8px;
+            border-radius: 12px;
             cursor: pointer;
             outline: none;
-            min-width: 200px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-            transition: all 0.2s ease;
+            transition: border-color 0.2s;
         }
 
-        select:hover {
-            border-color: #ccc;
+        select:hover, select:focus {
+            border-color: var(--text-sub);
         }
 
-        /* Custom arrow for dropdown */
-        .date-selector-wrapper::after {
+        .select-container::after {
             content: '↓';
-            font-size: 12px;
+            font-size: 14px;
             position: absolute;
-            right: 15px;
+            right: 18px;
             top: 50%;
             transform: translateY(-50%);
             pointer-events: none;
-            color: var(--text-light);
+            color: var(--text-sub);
         }
 
-        /* Timeline / List */
+        /* Timeline Styles */
         .timeline {
-            margin-top: 40px;
             position: relative;
+            padding-left: 30px;
         }
 
-        /* Vertical line */
         .timeline::before {
             content: '';
             position: absolute;
-            left: 15px;
-            top: 0;
-            bottom: 0;
-            width: 1px;
+            left: 6px;
+            top: 10px;
+            bottom: 10px;
+            width: 2px;
             background: var(--border);
-            z-index: 0;
+            border-radius: 2px;
         }
 
         .event-card {
             background: var(--card-bg);
             border: 1px solid var(--border);
-            border-radius: 12px;
+            border-radius: 16px;
             padding: 24px;
-            margin-bottom: 20px;
-            margin-left: 40px; /* Space for timeline */
+            margin-bottom: 24px;
             position: relative;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
-            transition: transform 0.2s ease;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer; /* Indicates clickability */
+            text-decoration: none; /* Removes underline from anchor */
+            display: block; /* Makes anchor behave like div */
+            color: inherit;
         }
 
         .event-card:hover {
             transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.04);
+            border-color: #d0d0d0;
         }
 
         /* Timeline Dot */
-        .event-card::before {
+        .event-card::after {
             content: '';
             position: absolute;
             left: -30px;
-            top: 32px;
-            width: 10px;
-            height: 10px;
-            background: var(--accent);
+            top: 30px;
+            width: 14px;
+            height: 14px;
+            background: var(--card-bg);
+            border: 3px solid var(--text-main);
             border-radius: 50%;
-            border: 4px solid var(--bg-color); /* Creates gap effect */
-            z-index: 1;
+            z-index: 2;
         }
 
-        .header-row {
+        .card-header {
             display: flex;
+            justify-content: space-between;
             align-items: baseline;
-            gap: 12px;
             margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 8px;
         }
 
         .event-title {
             font-size: 18px;
             font-weight: 600;
             margin: 0;
+            color: var(--text-main);
         }
 
         .event-time {
-            font-size: 13px;
-            color: var(--text-light);
-            font-weight: 400;
-            font-family: monospace;
+            font-size: 14px;
+            color: var(--text-sub);
+            font-weight: 500;
+            background: var(--highlight);
+            padding: 4px 10px;
+            border-radius: 6px;
         }
+
+        .info-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--text-sub);
+            margin-top: 8px;
+        }
+
+        .icon { opacity: 0.7; }
 
         .remarks {
-            font-size: 14px;
+            margin-top: 16px;
+            font-size: 15px;
             line-height: 1.6;
-            color: #555;
-            margin-bottom: 16px;
+            color: #444;
+            border-top: 1px solid var(--highlight);
+            padding-top: 12px;
         }
 
-        .map-link {
-            display: inline-flex;
-            align-items: center;
-            text-decoration: none;
-            color: var(--text-main);
-            font-size: 13px;
+        .status-open {
+            color: #2e7d32;
             font-weight: 500;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 2px;
+            font-size: 13px;
         }
 
-        .map-link:hover {
-            border-bottom-color: var(--accent);
-        }
-
-        .map-icon {
-            margin-right: 6px;
-        }
-
-        /* Loader */
-        #loader {
-            color: var(--text-light);
-            font-size: 14px;
-            margin-top: 20px;
-        }
-        
-        .hidden { display: none; }
+        .loading { text-align: center; color: var(--text-sub); margin-top: 40px; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
     <div class="container">
         <header>
-            <h1>Itinerary</h1>
-            <div class="date-selector-wrapper">
+            <h1>Trip Itinerary</h1>
+            <div class="select-container">
                 <select id="dateSelect">
                     <option value="" disabled selected>Select a Date</option>
                 </select>
             </div>
         </header>
 
-        <div id="loader">Loading itinerary...</div>
+        <div id="loader" class="loading">Loading your plans...</div>
         <div id="itineraryList" class="timeline"></div>
     </div>
 
     <script>
         // ---------------------------------------------------------
-        // TODO: PASTE YOUR GOOGLE SHEET CSV LINK HERE
+        // PASTE YOUR GOOGLE SHEET CSV LINK HERE
         // ---------------------------------------------------------
         const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT_k_9sk4zBlZUCS-2n0jxU326uHpPwGiFeXwwQbQhGo6r3Fc-l2eNP89rjP9UBqtwvIEC0vdZ9jbZl/pub?output=csv'; 
 
         let allData = [];
 
-        // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             if(SHEET_CSV_URL.includes('PASTE_YOUR')) {
-                alert('Please edit the HTML file and paste your Google Sheet CSV link in the code.');
+                alert('Please update the code with your Google Sheet CSV link.');
                 return;
             }
-            fetchData();
+            loadData();
         });
 
-        // Fetch and Parse CSV
-        function fetchData() {
+        function loadData() {
             Papa.parse(SHEET_CSV_URL, {
                 download: true,
                 header: true,
+                skipEmptyLines: true,
                 complete: function(results) {
                     allData = results.data;
-                    populateDropdown(allData);
-                    document.getElementById('loader').classList.add('hidden');
+                    initApp(allData);
                 },
                 error: function(err) {
-                    console.error("Error fetching CSV:", err);
-                    document.getElementById('loader').innerText = "Error loading data.";
+                    console.error("Error:", err);
+                    document.getElementById('loader').innerText = "Failed to load data.";
                 }
             });
         }
 
-        // Extract unique dates and fill dropdown
-        function populateDropdown(data) {
+        function initApp(data) {
             const dateSelect = document.getElementById('dateSelect');
-            
-            // Get unique dates and sort them
-            const dates = [...new Set(data.map(item => item.Date).filter(Boolean))];
-            dates.sort();
+            const dates = [...new Set(data.map(i => i.Date).filter(Boolean))].sort();
 
             dates.forEach(date => {
-                const option = document.createElement('option');
-                option.value = date;
-                option.textContent = formatDate(date); // Make it look nice
-                dateSelect.appendChild(option);
+                const opt = document.createElement('option');
+                opt.value = date;
+                opt.textContent = new Date(date).toLocaleDateString('en-US', { 
+                    weekday: 'short', month: 'short', day: 'numeric' 
+                });
+                dateSelect.appendChild(opt);
             });
 
-            // Auto-select first date
-            if (dates.length > 0) {
+            document.getElementById('loader').classList.add('hidden');
+
+            // Select first date automatically
+            if(dates.length > 0) {
                 dateSelect.value = dates[0];
-                renderItinerary(dates[0]);
+                renderEvents(dates[0]);
             }
 
-            // Listen for changes
-            dateSelect.addEventListener('change', (e) => {
-                renderItinerary(e.target.value);
-            });
+            dateSelect.addEventListener('change', (e) => renderEvents(e.target.value));
         }
 
-        // Format Date (e.g., 2023-10-25 -> Wed, Oct 25)
-        function formatDate(dateString) {
-            const options = { weekday: 'short', month: 'short', day: 'numeric' };
-            const date = new Date(dateString);
-            return date.toLocaleDateString('en-US', options);
+        // --- NEW: Robust Time Parsing for Sorting ---
+        function parseTime(timeStr) {
+            if (!timeStr) return 9999; // Put empty times at the end
+            
+            // Handle "14:30" or "2:30 PM"
+            const date = new Date('1970/01/01 ' + timeStr);
+            if (isNaN(date.getTime())) return 9999;
+            
+            return date.getHours() * 60 + date.getMinutes();
         }
 
-        // Render the list
-        function renderItinerary(selectedDate) {
+        function renderEvents(date) {
             const container = document.getElementById('itineraryList');
-            container.innerHTML = ''; // Clear previous
+            container.innerHTML = '';
 
-            // Filter by date and Sort by Time
-            const filtered = allData
-                .filter(item => item.Date === selectedDate)
-                .sort((a, b) => {
-                    return a.Time.localeCompare(b.Time);
-                });
+            const events = allData
+                .filter(d => d.Date === date)
+                .sort((a, b) => parseTime(a.Time) - parseTime(b.Time)); // Fixed Sorting
 
-            if (filtered.length === 0) {
-                container.innerHTML = '<p style="text-align:center; color:#888;">No plans for this day.</p>';
+            if (events.length === 0) {
+                container.innerHTML = '<div class="loading">No plans for this date.</div>';
                 return;
             }
 
-            filtered.forEach(item => {
-                // Create Card
-                const card = document.createElement('div');
-                card.className = 'event-card';
-
-                // Remarks HTML
-                const remarksHtml = item.Remarks ? `<div class="remarks">${item.Remarks}</div>` : '';
+            events.forEach(item => {
+                // Link Logic: Make the whole card a link if URL exists
+                const hasLink = item.Link && item.Link.trim().length > 0;
+                const tag = hasLink ? 'a' : 'div';
+                const hrefAttr = hasLink ? `href="${item.Link}" target="_blank"` : '';
                 
-                // Map Link HTML
-                let mapHtml = '';
-                if (item.Link) {
-                    mapHtml = `
-                        <a href="${item.Link}" target="_blank" class="map-link">
-                            <span class="map-icon">📍</span> Open in Google Maps
-                        </a>`;
-                }
+                // Opening Hours Logic (Looks for "Opening Hours" column)
+                const hours = item['Opening Hours'] || item['Opening_Hours'] || item['Hours']; 
+                const hoursHtml = hours 
+                    ? `<div class="info-row"><span class="icon">🕒</span> <span class="status-open">${hours}</span></div>` 
+                    : '';
 
-                card.innerHTML = `
-                    <div class="header-row">
-                        <h2 class="event-title">${item.Name}</h2>
-                        <span class="event-time">${item.Time}</span>
-                    </div>
-                    ${remarksHtml}
-                    ${mapHtml}
+                // Address/Map hint
+                const locationHtml = hasLink 
+                    ? `<div class="info-row"><span class="icon">📍</span> Open in Google Maps</div>` 
+                    : '';
+
+                const remarksHtml = item.Remarks 
+                    ? `<div class="remarks">${item.Remarks}</div>` 
+                    : '';
+
+                const cardHTML = `
+                    <${tag} class="event-card" ${hrefAttr}>
+                        <div class="card-header">
+                            <h2 class="event-title">${item.Name}</h2>
+                            <span class="event-time">${item.Time}</span>
+                        </div>
+                        ${hoursHtml}
+                        ${locationHtml}
+                        ${remarksHtml}
+                    </${tag}>
                 `;
 
-                container.appendChild(card);
+                container.insertAdjacentHTML('beforeend', cardHTML);
             });
         }
     </script>
