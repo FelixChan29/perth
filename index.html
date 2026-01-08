@@ -3,290 +3,321 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perth Trip 2025</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <title>Travel Itinerary</title>
+    
+    <!-- Minimalist Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- CSV Parser Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
     <style>
         :root {
-            --primary: #1a73e8; /* Google Blue */
-            --green: #188038;   /* Google Green */
-            --bg: #f8f9fa;
+            --bg-color: #fcfcfc;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-light: #888888;
+            --accent: #2d2d2d;
+            --border: #eaeaea;
         }
-        body { background: var(--bg); font-family: 'Roboto', 'Segoe UI', sans-serif; padding-bottom: 100px; }
-        
-        /* Nav Scroller */
-        .nav-scroller {
-            background: white;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            padding: 12px 0;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-            overflow-x: auto;
-            white-space: nowrap;
-        }
-        .nav-btn {
-            border: 1px solid #dadce0;
-            background: #fff;
-            padding: 8px 16px;
-            border-radius: 100px;
-            margin: 0 4px;
-            font-size: 0.9rem;
-            color: #5f6368;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-        .nav-btn.active {
-            background: #e8f0fe;
-            color: var(--primary);
-            border-color: var(--primary);
-        }
-        .nav-btn strong { display: block; font-size: 0.75rem; }
 
-        /* Timeline */
-        .timeline {
-            position: relative;
-            padding: 20px 0 20px 20px;
-            max-width: 700px;
-            margin: 0 auto;
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-        .timeline-item {
-            position: relative;
-            padding-bottom: 40px;
-            border-left: 2px solid #dadce0;
-            padding-left: 30px;
+
+        .container {
+            max-width: 600px;
+            width: 100%;
         }
-        .timeline-item:last-child { border-left: transparent; }
-        
-        .timeline-dot {
+
+        header {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        h1 {
+            font-weight: 300;
+            letter-spacing: -1px;
+            margin-bottom: 20px;
+        }
+
+        /* Minimalist Dropdown */
+        .date-selector-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        select {
+            appearance: none;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 12px 40px 12px 20px;
+            font-family: inherit;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            outline: none;
+            min-width: 200px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            transition: all 0.2s ease;
+        }
+
+        select:hover {
+            border-color: #ccc;
+        }
+
+        /* Custom arrow for dropdown */
+        .date-selector-wrapper::after {
+            content: '↓';
+            font-size: 12px;
             position: absolute;
-            left: -9px;
-            top: 0;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: white;
-            border: 4px solid var(--primary);
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: var(--text-light);
         }
 
-        /* Cards */
-        .activity-card {
-            background: white;
-            border-radius: 12px;
-            padding: 16px;
-            box-shadow: 0 1px 2px rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
+        /* Timeline / List */
+        .timeline {
+            margin-top: 40px;
+            position: relative;
         }
-        
-        /* Links */
-        .place-link {
-            text-decoration: none;
-            color: #202124;
-            font-weight: 700;
-            font-size: 1.1rem;
+
+        /* Vertical line */
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background: var(--border);
+            z-index: 0;
+        }
+
+        .event-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            margin-left: 40px; /* Space for timeline */
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+            transition: transform 0.2s ease;
+        }
+
+        .event-card:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Timeline Dot */
+        .event-card::before {
+            content: '';
+            position: absolute;
+            left: -30px;
+            top: 32px;
+            width: 10px;
+            height: 10px;
+            background: var(--accent);
+            border-radius: 50%;
+            border: 4px solid var(--bg-color); /* Creates gap effect */
+            z-index: 1;
+        }
+
+        .header-row {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .event-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .event-time {
+            font-size: 13px;
+            color: var(--text-light);
+            font-weight: 400;
+            font-family: monospace;
+        }
+
+        .remarks {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #555;
+            margin-bottom: 16px;
+        }
+
+        .map-link {
             display: inline-flex;
             align-items: center;
-        }
-        .place-link:hover { color: var(--primary); text-decoration: underline; }
-        .place-link i { font-size: 0.7em; margin-left: 8px; color: var(--primary); opacity: 0.7; }
-
-        /* Navigation Button (Green) */
-        .nav-action-btn {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background-color: white;
-            color: var(--green);
-            border: 1px solid #dadce0;
-            padding: 10px 16px;
-            border-radius: 24px;
-            margin-top: 12px;
             text-decoration: none;
-            font-weight: 600;
-            font-size: 0.85rem;
-            transition: background 0.2s;
+            color: var(--text-main);
+            font-size: 13px;
+            font-weight: 500;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 2px;
         }
-        .nav-action-btn:hover { background-color: #f1f8f1; }
-        .nav-action-btn i { font-size: 1.1em; }
 
-        /* Badges */
-        .time-badge { background: #e8f0fe; color: var(--primary); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
-        .rating-badge { color: #f9ab00; font-size: 0.8rem; }
+        .map-link:hover {
+            border-bottom-color: var(--accent);
+        }
+
+        .map-icon {
+            margin-right: 6px;
+        }
+
+        /* Loader */
+        #loader {
+            color: var(--text-light);
+            font-size: 14px;
+            margin-top: 20px;
+        }
+        
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
-<div class="nav-scroller text-center">
-    <div class="d-inline-flex px-3" id="nav-container"></div>
-</div>
+    <div class="container">
+        <header>
+            <h1>Itinerary</h1>
+            <div class="date-selector-wrapper">
+                <select id="dateSelect">
+                    <option value="" disabled selected>Select a Date</option>
+                </select>
+            </div>
+        </header>
 
-<div class="container mt-4">
-    <div id="day-header" class="text-center mb-4"></div>
-    <div class="timeline" id="timeline-container"></div>
-</div>
+        <div id="loader">Loading itinerary...</div>
+        <div id="itineraryList" class="timeline"></div>
+    </div>
 
-<script>
-    // DATA: Note that 'loc' is now very specific to ensure Google Maps finds the correct place.
-    const itinerary = [
-        {
-            day: 1, date: "Sat, 20 Dec", title: "Arrival & CBD",
-            steps: [
-                { time: "06:55", title: "Perth Airport", desc: "Arrive CX143. Collect Car.", loc: "Perth Airport WA" },
-                { time: "AM", title: "Four Points by Sheraton Perth", desc: "Check-in", loc: "Four Points by Sheraton Perth" },
-                { time: "Mid-day", title: "Elizabeth Quay", desc: "Stroll riverside", loc: "Elizabeth Quay Perth" },
-                { time: "Lunch", title: "SIMPLE Italian Cucina", desc: "Pizza & Views", rating: "4.7", loc: "SIMPLE Italian Cucina Pizzeria Perth" },
-                { time: "PM", title: "The Perth Mint", desc: "Gold Pouring", loc: "The Perth Mint Australia" },
-                { time: "Evening", title: "Four Points by Sheraton Perth", desc: "Rest", loc: "Four Points by Sheraton Perth" }
-            ]
-        },
-        {
-            day: 2, date: "Sun, 21 Dec", title: "Perth → Kalbarri",
-            steps: [
-                { time: "08:00", title: "Four Points by Sheraton Perth", desc: "Depart Hotel", loc: "Four Points by Sheraton Perth" },
-                { time: "09:30", title: "Lancelin Sand Dunes", desc: "Sandboarding", loc: "Lancelin Sand Dunes WA" },
-                { time: "11:30", title: "Lobster Shack Cervantes", desc: "Seafood Lunch [Booked]", rating: "4.5", loc: "Lobster Shack Cervantes WA" },
-                { time: "13:05", title: "Grigson's Lookout", desc: "Views", loc: "Grigson's Lookout Jurien Bay" },
-                { time: "15:00", title: "Leaning Tree Greenough", desc: "Photo Stop", loc: "Leaning Tree Greenough WA" },
-                { time: "17:40", title: "Nature's Window", desc: "Kalbarri National Park", loc: "Nature's Window Kalbarri" },
-                { time: "19:30", title: "Kalbarri Edge Resort", desc: "Check-in & Dinner", loc: "Kalbarri Edge Resort" }
-            ]
-        },
-        {
-            day: 3, date: "Mon, 22 Dec", title: "Kalbarri → Perth",
-            steps: [
-                { time: "08:00", title: "The Pelican Cafe", desc: "Breakfast", loc: "The Pelican Cafe Kalbarri" },
-                { time: "09:25", title: "Blue Holes", desc: "Rock pools", loc: "Blue Holes Kalbarri" },
-                { time: "10:00", title: "Kalbarri Airport", desc: "Pink Lake Flight", loc: "Kalbarri Airport" },
-                { time: "11:45", title: "Golden Wok Kalbarri", desc: "Lunch", loc: "Golden Wok Kalbarri" },
-                { time: "12:30", title: "Pot Alley", desc: "Cliffs Photo", loc: "Pot Alley Kalbarri" },
-                { time: "14:00", title: "Hutt Lagoon", desc: "Pink Lake Lookout", loc: "Hutt Lagoon WA" },
-                { time: "18:00", title: "Sea Breeze Cafe", desc: "Dinner (Takeaway)", loc: "Sea Breeze Cafe Cervantes" },
-                { time: "18:45", title: "The Pinnacles Desert", desc: "Sunset", loc: "The Pinnacles Desert Discovery Centre" },
-                { time: "21:30", title: "Four Points by Sheraton Perth", desc: "Return Hotel", loc: "Four Points by Sheraton Perth" }
-            ]
-        },
-        {
-            day: 4, date: "Tue, 23 Dec", title: "Rottnest Island",
-            steps: [
-                { time: "09:00", title: "B Shed Fremantle", desc: "Ferry Terminal", loc: "B Shed Fremantle" },
-                { time: "10:30", title: "Rottnest Island Bakery", desc: "Lunch & Quokkas", loc: "Rottnest Bakery" },
-                { time: "Sightseeing", title: "Parker Point", desc: "Views (Island Bus)", loc: "Parker Point Rottnest" },
-                { time: "Sightseeing", title: "Wadjemup Lighthouse", desc: "Island Bus", loc: "Wadjemup Lighthouse" },
-                { time: "17:00", title: "B Shed Fremantle", desc: "Return Ferry", loc: "B Shed Fremantle" },
-                { time: "18:00", title: "Balthazar Restaurant", desc: "Dinner CBD [Booked]", rating: "4.6", loc: "Balthazar Restaurant Perth" }
-            ]
-        },
-        {
-            day: 5, date: "Wed, 24 Dec", title: "Wildlife & Swan Valley",
-            steps: [
-                { time: "08:30", title: "Caversham Wildlife Park", desc: "Koalas", loc: "Caversham Wildlife Park" },
-                { time: "PM", title: "Margaret River Chocolate Co", desc: "Tastings", loc: "The Margaret River Chocolate Company Swan Valley" },
-                { time: "PM", title: "The House of Honey", desc: "Tastings", loc: "The House of Honey Swan Valley" },
-                { time: "18:00", title: "KARLA Place of Fire", desc: "Dinner [Booked]", rating: "4.8", loc: "KARLA Place of Fire" },
-                { time: "19:45", title: "Yagan Square", desc: "Xmas Lights", loc: "Yagan Square Perth" }
-            ]
-        },
-        {
-            day: 6, date: "Thu, 25 Dec", title: "Christmas Day",
-            steps: [
-                { time: "AM", title: "Kings Park", desc: "Botanic Garden", loc: "Kings Park and Botanic Garden" },
-                { time: "Photo", title: "Blue Boat House", desc: "Photo Stop", loc: "Blue Boat House Perth" },
-                { time: "PM", title: "Cottesloe Beach", desc: "Relax", loc: "Cottesloe Beach" }
-            ]
-        },
-        {
-            day: 7, date: "Fri, 26 Dec", title: "Busselton & Mandurah",
-            steps: [
-                { time: "09:00", title: "Giants of Mandurah", desc: "Sculpture", loc: "Giant of Mandurah Yaburgurt Winjan" },
-                { time: "10:00", title: "Mandurah Cruises", desc: "Pirate Ship", loc: "Mandurah Cruises" },
-                { time: "13:00", title: "KYST", desc: "Lunch [Booked]", loc: "KYST Busselton" },
-                { time: "15:00", title: "Busselton Jetty", desc: "Train & Observatory", loc: "Busselton Jetty" },
-                { time: "18:40", title: "Lake Clifton", desc: "Thrombolites", loc: "Lake Clifton Thrombolites" },
-                { time: "19:30", title: "Flics Kitchen", desc: "Dinner", loc: "Flics Kitchen Mandurah" }
-            ]
-        },
-        {
-            day: 8, date: "Sat, 27 Dec", title: "Fremantle",
-            steps: [
-                { time: "09:30", title: "Rainbow Container", desc: "Photo Stop", loc: "Rainbow Container Fremantle" },
-                { time: "10:00", title: "Fremantle Markets", desc: "Browse", loc: "Fremantle Markets" },
-                { time: "11:15", title: "WA Shipwrecks Museum", desc: "Museum", loc: "WA Shipwrecks Museum" },
-                { time: "13:00", title: "The Cray Seafood", desc: "Lunch [Booked]", rating: "4.7", loc: "The Cray Seafood & Grill Fremantle" },
-                { time: "14:45", title: "Glowing Rooms", desc: "Mini Golf", loc: "Glowing Rooms - 3D Mini Golf" },
-                { time: "18:00", title: "Nunzio's Restaurant", desc: "Dinner", rating: "4.6", loc: "Nunzio's Restaurant" }
-            ]
-        },
-        {
-            day: 9, date: "Sun, 28 Dec", title: "Departure",
-            steps: [
-                { time: "08:30", title: "Perth Airport", desc: "Flight CX182", loc: "Perth Airport" }
-            ]
-        }
-    ];
+    <script>
+        // ---------------------------------------------------------
+        // TODO: PASTE YOUR GOOGLE SHEET CSV LINK HERE
+        // ---------------------------------------------------------
+        const SHEET_CSV_URL = 'PASTE_YOUR_PUBLISHED_CSV_LINK_HERE'; 
 
-    function renderNav() {
-        document.getElementById('nav-container').innerHTML = itinerary.map((day, idx) => `
-            <button class="nav-btn ${idx === 0 ? 'active' : ''}" onclick="loadDay(${idx}, this)">
-                <strong>Day ${day.day}</strong> ${day.date.split(',')[0]}
-            </button>
-        `).join('');
-    }
+        let allData = [];
 
-    function loadDay(index, btnEl) {
-        if(btnEl) {
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            btnEl.classList.add('active');
-        }
-        
-        const data = itinerary[index];
-        document.getElementById('day-header').innerHTML = `<h4 class="fw-bold mb-0 text-dark">${data.title}</h4><small class="text-secondary">${data.date}</small>`;
-        
-        const container = document.getElementById('timeline-container');
-        let html = '';
-
-        data.steps.forEach(step => {
-            // URL 1: The "Place" Link (Clicking the Title)
-            // Uses /search/?api=1&query=Name to strictly find the place.
-            const placeUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(step.loc)}`;
-            
-            // URL 2: The "Navigation" Link (Clicking the Green Button)
-            // Uses /dir/?api=1&destination=Name (Origin defaults to "My Location")
-            const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(step.loc)}`;
-
-            html += `
-            <div class="timeline-item">
-                <div class="timeline-dot"></div>
-                <div class="activity-card">
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                        <span class="time-badge">${step.time}</span>
-                        ${step.rating ? `<span class="rating-badge"><i class="fas fa-star"></i> ${step.rating}</span>` : ''}
-                    </div>
-                    
-                    <!-- 1. Place Link -->
-                    <a href="${placeUrl}" target="_blank" class="place-link">
-                        ${step.title} <i class="fas fa-external-link-alt"></i>
-                    </a>
-                    
-                    <p class="mb-2 text-secondary small">${step.desc}</p>
-                    
-                    <!-- 2. Navigation Button -->
-                    ${step.loc ? `
-                    <a href="${navUrl}" target="_blank" class="nav-action-btn">
-                        <span><i class="fas fa-location-arrow me-2"></i>Navigate Here</span>
-                        <small class="text-muted fw-normal">from my location</small>
-                    </a>` : ''}
-                </div>
-            </div>`;
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            if(SHEET_CSV_URL.includes('PASTE_YOUR')) {
+                alert('Please edit the HTML file and paste your Google Sheet CSV link in the code.');
+                return;
+            }
+            fetchData();
         });
 
-        container.innerHTML = html;
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+        // Fetch and Parse CSV
+        function fetchData() {
+            Papa.parse(SHEET_CSV_URL, {
+                download: true,
+                header: true,
+                complete: function(results) {
+                    allData = results.data;
+                    populateDropdown(allData);
+                    document.getElementById('loader').classList.add('hidden');
+                },
+                error: function(err) {
+                    console.error("Error fetching CSV:", err);
+                    document.getElementById('loader').innerText = "Error loading data.";
+                }
+            });
+        }
 
-    document.addEventListener('DOMContentLoaded', () => {
-        renderNav();
-        loadDay(0);
-    });
-</script>
+        // Extract unique dates and fill dropdown
+        function populateDropdown(data) {
+            const dateSelect = document.getElementById('dateSelect');
+            
+            // Get unique dates and sort them
+            const dates = [...new Set(data.map(item => item.Date).filter(Boolean))];
+            dates.sort();
 
+            dates.forEach(date => {
+                const option = document.createElement('option');
+                option.value = date;
+                option.textContent = formatDate(date); // Make it look nice
+                dateSelect.appendChild(option);
+            });
+
+            // Auto-select first date
+            if (dates.length > 0) {
+                dateSelect.value = dates[0];
+                renderItinerary(dates[0]);
+            }
+
+            // Listen for changes
+            dateSelect.addEventListener('change', (e) => {
+                renderItinerary(e.target.value);
+            });
+        }
+
+        // Format Date (e.g., 2023-10-25 -> Wed, Oct 25)
+        function formatDate(dateString) {
+            const options = { weekday: 'short', month: 'short', day: 'numeric' };
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', options);
+        }
+
+        // Render the list
+        function renderItinerary(selectedDate) {
+            const container = document.getElementById('itineraryList');
+            container.innerHTML = ''; // Clear previous
+
+            // Filter by date and Sort by Time
+            const filtered = allData
+                .filter(item => item.Date === selectedDate)
+                .sort((a, b) => {
+                    return a.Time.localeCompare(b.Time);
+                });
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:#888;">No plans for this day.</p>';
+                return;
+            }
+
+            filtered.forEach(item => {
+                // Create Card
+                const card = document.createElement('div');
+                card.className = 'event-card';
+
+                // Remarks HTML
+                const remarksHtml = item.Remarks ? `<div class="remarks">${item.Remarks}</div>` : '';
+                
+                // Map Link HTML
+                let mapHtml = '';
+                if (item.Link) {
+                    mapHtml = `
+                        <a href="${item.Link}" target="_blank" class="map-link">
+                            <span class="map-icon">📍</span> Open in Google Maps
+                        </a>`;
+                }
+
+                card.innerHTML = `
+                    <div class="header-row">
+                        <h2 class="event-title">${item.Name}</h2>
+                        <span class="event-time">${item.Time}</span>
+                    </div>
+                    ${remarksHtml}
+                    ${mapHtml}
+                `;
+
+                container.appendChild(card);
+            });
+        }
+    </script>
 </body>
 </html>
