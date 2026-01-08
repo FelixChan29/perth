@@ -14,10 +14,12 @@
             --card-bg: #ffffff;
             --text-main: #222222;
             --text-sub: #666666;
-            --accent: #222222; /* Darker accent for links */
+            --accent: #222222;
             --border: #e0e0e0;
             --highlight: #f4f4f4;
-            --link-color: #0056b3; /* Explicit color for links */
+            --link-color: #0056b3;
+            --btn-color: #333;
+            --btn-text: #fff;
         }
 
         body {
@@ -29,6 +31,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            min-height: 100vh;
         }
 
         .container {
@@ -37,23 +40,79 @@
         }
 
         header {
-            margin-bottom: 50px;
+            margin-bottom: 30px;
             text-align: center;
         }
 
         h1 {
             font-weight: 600;
             letter-spacing: -0.5px;
-            margin-bottom: 25px;
+            margin-bottom: 10px;
             font-size: 28px;
         }
 
-        /* Dropdown Style */
+        /* --- SETUP PANEL --- */
+        .setup-panel {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            margin-top: 40px;
+        }
+
+        .setup-desc {
+            color: var(--text-sub);
+            margin-bottom: 20px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        input[type="text"] {
+            padding: 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 16px;
+            width: 100%;
+            box-sizing: border-box;
+            outline: none;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--text-main);
+        }
+
+        button.primary-btn {
+            background: var(--btn-color);
+            color: var(--btn-text);
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        button.primary-btn:hover {
+            opacity: 0.9;
+        }
+
+        /* --- MAIN VIEW --- */
         .select-container {
             position: relative;
             display: inline-block;
             width: 100%;
             max-width: 280px;
+            margin-top: 10px;
         }
 
         select {
@@ -70,10 +129,6 @@
             transition: border-color 0.2s;
         }
 
-        select:hover, select:focus {
-            border-color: var(--text-sub);
-        }
-
         .select-container::after {
             content: '↓';
             font-size: 14px;
@@ -85,10 +140,10 @@
             color: var(--text-sub);
         }
 
-        /* Timeline Styles */
         .timeline {
             position: relative;
             padding-left: 30px;
+            margin-top: 30px;
         }
 
         .timeline::before {
@@ -117,7 +172,6 @@
             box-shadow: 0 8px 24px rgba(0,0,0,0.04);
         }
 
-        /* Timeline Dot */
         .event-card::after {
             content: '';
             position: absolute;
@@ -140,7 +194,6 @@
             gap: 8px;
         }
 
-        /* Title Link Styling */
         .event-title {
             font-size: 18px;
             font-weight: 600;
@@ -152,12 +205,12 @@
             text-decoration: none;
             color: var(--text-main);
             border-bottom: 1px solid transparent;
-            transition: border-color 0.2s, color 0.2s;
+            transition: all 0.2s;
         }
 
         .event-title a:hover {
             color: var(--link-color);
-            border-bottom: 1px solid var(--link-color);
+            border-bottom-color: var(--link-color);
         }
 
         .event-time {
@@ -179,6 +232,18 @@
         }
 
         .icon { opacity: 0.7; }
+        
+        /* Direction Link Specifics */
+        .direction-link {
+            color: inherit;
+            text-decoration: none;
+            border-bottom: 1px dotted #999;
+            font-size: 12px;
+        }
+        .direction-link:hover {
+            color: var(--link-color);
+            border-bottom-style: solid;
+        }
 
         .remarks {
             margin-top: 16px;
@@ -195,92 +260,159 @@
             font-size: 13px;
         }
 
-        .loading { text-align: center; color: var(--text-sub); margin-top: 40px; }
         .hidden { display: none !important; }
+        .loading { text-align: center; color: var(--text-sub); margin-top: 40px; }
+        
+        .reset-link {
+            display: block;
+            margin-top: 40px;
+            text-align: center;
+            font-size: 12px;
+            color: #999;
+            text-decoration: underline;
+            cursor: pointer;
+            border: none;
+            background: none;
+            width: 100%;
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
+        <!-- HEADER -->
         <header>
             <h1>Trip Itinerary</h1>
-            <div class="select-container">
+            <div id="dateSelectorWrapper" class="select-container hidden">
                 <select id="dateSelect">
                     <option value="" disabled selected>Select a Date</option>
                 </select>
             </div>
         </header>
 
-        <div id="loader" class="loading">Loading your plans...</div>
-        <div id="itineraryList" class="timeline"></div>
+        <!-- SETUP PANEL -->
+        <div id="setupPanel" class="setup-panel hidden">
+            <div class="setup-desc">
+                Paste your Google Sheet <strong>Published CSV Link</strong> below.
+            </div>
+            <div class="input-group">
+                <input type="text" id="csvUrlInput" placeholder="https://docs.google.com/.../pub?output=csv">
+                <button onclick="saveAndLoad()" class="primary-btn">Load Itinerary</button>
+            </div>
+            <div id="errorMsg" style="color:red; font-size:13px; margin-top:10px;" class="hidden"></div>
+        </div>
+
+        <!-- VIEW PANEL -->
+        <div id="viewPanel" class="hidden">
+            <div id="loader" class="loading hidden">Loading data...</div>
+            <div id="itineraryList" class="timeline"></div>
+            <button onclick="resetApp()" class="reset-link">Change Spreadsheet Link</button>
+        </div>
     </div>
 
     <script>
-        // ---------------------------------------------------------
-        // PASTE YOUR GOOGLE SHEET CSV LINK HERE
-        // ---------------------------------------------------------
-        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT_k_9sk4zBlZUCS-2n0jxU326uHpPwGiFeXwwQbQhGo6r3Fc-l2eNP89rjP9UBqtwvIEC0vdZ9jbZl/pub?output=csv'; 
-
         let allData = [];
+        const STORAGE_KEY = 'itinerary_csv_url';
 
         document.addEventListener('DOMContentLoaded', () => {
-            if(SHEET_CSV_URL.includes('PASTE_YOUR')) {
-                alert('Please update the code with your Google Sheet CSV link.');
-                return;
+            const storedUrl = localStorage.getItem(STORAGE_KEY);
+            if (storedUrl) {
+                loadData(storedUrl);
+            } else {
+                showSetup();
             }
-            loadData();
         });
 
-        function loadData() {
-            Papa.parse(SHEET_CSV_URL, {
+        function showSetup() {
+            document.getElementById('setupPanel').classList.remove('hidden');
+            document.getElementById('viewPanel').classList.add('hidden');
+            document.getElementById('dateSelectorWrapper').classList.add('hidden');
+        }
+
+        function showView() {
+            document.getElementById('setupPanel').classList.add('hidden');
+            document.getElementById('viewPanel').classList.remove('hidden');
+            document.getElementById('dateSelectorWrapper').classList.remove('hidden');
+        }
+
+        function saveAndLoad() {
+            const input = document.getElementById('csvUrlInput');
+            const url = input.value.trim();
+            if (!url) {
+                alert("Please enter a URL.");
+                return;
+            }
+            loadData(url);
+        }
+
+        function resetApp() {
+            if(confirm("Remove this itinerary and enter a new link?")) {
+                localStorage.removeItem(STORAGE_KEY);
+                location.reload();
+            }
+        }
+
+        function loadData(url) {
+            document.getElementById('setupPanel').classList.add('hidden');
+            document.getElementById('viewPanel').classList.remove('hidden');
+            document.getElementById('loader').classList.remove('hidden');
+
+            Papa.parse(url, {
                 download: true,
                 header: true,
                 skipEmptyLines: true,
                 complete: function(results) {
-                    allData = results.data;
-                    initApp(allData);
+                    if (results.data && results.data.length > 0) {
+                        localStorage.setItem(STORAGE_KEY, url);
+                        allData = results.data;
+                        showView();
+                        initDropdown(allData);
+                        document.getElementById('loader').classList.add('hidden');
+                    } else {
+                        handleError();
+                    }
                 },
                 error: function(err) {
-                    console.error("Error:", err);
-                    document.getElementById('loader').innerText = "Failed to load data.";
+                    handleError();
+                    console.error(err);
                 }
             });
         }
 
-        function initApp(data) {
+        function handleError() {
+            localStorage.removeItem(STORAGE_KEY);
+            document.getElementById('loader').classList.add('hidden');
+            showSetup();
+            document.getElementById('errorMsg').textContent = "Error loading data. Check link.";
+            document.getElementById('errorMsg').classList.remove('hidden');
+        }
+
+        function initDropdown(data) {
             const dateSelect = document.getElementById('dateSelect');
-            
-            // Get unique dates
+            dateSelect.innerHTML = '<option value="" disabled selected>Select a Date</option>';
+
             const dates = [...new Set(data.map(i => i.Date).filter(Boolean))].sort();
 
-            // Populate Dropdown
             dates.forEach(date => {
                 const opt = document.createElement('option');
                 opt.value = date;
-                // Display format: "Wed, Oct 25"
                 opt.textContent = new Date(date).toLocaleDateString('en-US', { 
                     weekday: 'short', month: 'short', day: 'numeric' 
                 });
                 dateSelect.appendChild(opt);
             });
 
-            document.getElementById('loader').classList.add('hidden');
-
-            // --- DATE SELECTION LOGIC ---
             if(dates.length > 0) {
-                // 1. Get today's date in YYYY-MM-DD format (Local time)
                 const today = new Date();
                 const year = today.getFullYear();
                 const month = String(today.getMonth() + 1).padStart(2, '0');
                 const day = String(today.getDate()).padStart(2, '0');
                 const todayStr = `${year}-${month}-${day}`;
 
-                // 2. Check if today exists in the list
                 if (dates.includes(todayStr)) {
                     dateSelect.value = todayStr;
                     renderEvents(todayStr);
                 } else {
-                    // 3. Fallback to earliest date
                     dateSelect.value = dates[0];
                     renderEvents(dates[0]);
                 }
@@ -289,7 +421,6 @@
             dateSelect.addEventListener('change', (e) => renderEvents(e.target.value));
         }
 
-        // Time Parsing for Sorting
         function parseTime(timeStr) {
             if (!timeStr) return 9999;
             const date = new Date('1970/01/01 ' + timeStr);
@@ -311,26 +442,29 @@
             }
 
             events.forEach(item => {
-                // Link Logic
                 const hasLink = item.Link && item.Link.trim().length > 0;
                 
-                // Construct Title HTML: Anchor if link exists, plain text if not
-                let titleHtml = '';
-                if (hasLink) {
-                    titleHtml = `<a href="${item.Link}" target="_blank" title="Open in Google Maps">${item.Name} ↗</a>`;
-                } else {
-                    titleHtml = item.Name;
-                }
+                // 1. Title Link -> Opens the URL from CSV (Place Details)
+                let titleHtml = hasLink 
+                    ? `<a href="${item.Link}" target="_blank" title="View details">${item.Name} ↗</a>` 
+                    : item.Name;
                 
-                // Opening Hours Logic
+                // 2. Directions Link -> Opens Directions to 'Name' from Current Location
+                // Logic: Uses the Event Name as the destination query.
+                let directionHtml = '';
+                if (hasLink) {
+                    const dirUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(item.Name)}`;
+                    directionHtml = `
+                        <div class="info-row">
+                            <span class="icon">📍</span> 
+                            <a href="${dirUrl}" target="_blank" class="direction-link">Direction</a>
+                        </div>
+                    `;
+                }
+
                 const hours = item['Opening Hours'] || item['Opening_Hours'] || item['Hours']; 
                 const hoursHtml = hours 
                     ? `<div class="info-row"><span class="icon">🕒</span> <span class="status-open">${hours}</span></div>` 
-                    : '';
-
-                // Optional: Keep a small location text for clarity if needed, or rely on title
-                const locationHtml = hasLink 
-                    ? `<div class="info-row"><span class="icon">📍</span> <a href="${item.Link}" target="_blank" style="color:inherit; text-decoration:none; border-bottom:1px dotted #999;">Map Location</a></div>` 
                     : '';
 
                 const remarksHtml = item.Remarks 
@@ -344,7 +478,7 @@
                             <span class="event-time">${item.Time}</span>
                         </div>
                         ${hoursHtml}
-                        ${locationHtml}
+                        ${directionHtml}
                         ${remarksHtml}
                     </div>
                 `;
